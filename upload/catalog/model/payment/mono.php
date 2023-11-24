@@ -130,7 +130,7 @@ class ModelPaymentMono extends Model
     public function DeleteLogs() {
         $sql = "DELETE
 FROM `" . DB_PREFIX . "monopay_logs`
-WHERE timestamp < DATE_SUB(NOW(), INTERVAL 5 DAY);
+WHERE timestamp < DATE_SUB(NOW(), INTERVAL 2 DAY);
 ";
 
         $this->db->query($sql);

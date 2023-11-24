@@ -3,7 +3,7 @@
 $model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_2.1.0';
+const MONOBANK_PAYMENT_VERSION = 'Polia_2.2.0';
 
 function handleException($e, $m = null, $is_init = false) {
     global $model, $log;
@@ -62,8 +62,7 @@ set_error_handler("fatalErrorHandler");
 
 set_exception_handler("handleException");
 
-class ControllerPaymentMono extends Controller
-{
+class ControllerPaymentMono extends Controller {
     private $error = [];
     private $rates_file_path = 'mono_rates.json';
 
@@ -100,6 +99,9 @@ class ControllerPaymentMono extends Controller
         if (!$uah) {
             return;
         }
+
+//        we do not allow custom rate, so we make force update of the rate
+//        it's not pretty, але маємо те шо маємо
         $default_currency_code = $this->config->get('config_currency');
         if ($default_currency_code != 'UAH') {
             $rates = $this->getRates();
@@ -129,7 +131,6 @@ class ControllerPaymentMono extends Controller
             }
         }
     }
-
 
     public function install() {
         $this->load->model('payment/mono');
@@ -211,18 +212,13 @@ class ControllerPaymentMono extends Controller
         return !$this->error;
     }
 
-
     public function order_info($somedata) {
         $orderId = $this->request->get['order_id'];
         $this->load->model('payment/mono');
         $this->load->model('sale/order');
 
         if ($orderId <= 0) {
-            try {
-                throw new ErrorException(sprintf("request came in with invalid order_id: %s", $orderId));
-            } catch (Exception $e) {
-                handleException($e);
-            }
+//            invalid order
             return;
         }
 
@@ -240,11 +236,7 @@ class ControllerPaymentMono extends Controller
                 return;
             }
             if (!$mono_order) {
-                try {
-                    throw new ErrorException(sprintf("invoice not found for order_id: %s", $orderId));
-                } catch (Exception $e) {
-                    handleException($e);
-                }
+//                 nothing to do here
                 return;
             }
             $order_info = $this->model_sale_order->getOrder($orderId);
@@ -324,8 +316,8 @@ class ControllerPaymentMono extends Controller
         ];
         if ($invoice_db['payment_type'] == 'hold') {
             $params['finalized_at'] = $invoice_db['finalized'];
-            $finalized_amound = $this->getAmount($invoice_db);
-            $params['finalized_amount'] = sprintf('%.2f', $finalized_amound / 100);
+            $finalized_amount = $this->getAmount($invoice_db);
+            $params['finalized_amount'] = sprintf('%.2f', $finalized_amount / 100);
         }
 
         $params['header'] = $this->load->controller('common/header');
@@ -435,7 +427,6 @@ class ControllerPaymentMono extends Controller
         return $this->response->setOutput($response);
     }
 
-
     public function getStatus($invoice_id) {
         $curl = curl_init();
 
@@ -508,13 +499,13 @@ class ControllerPaymentMono extends Controller
         return $rates_data;
     }
 
-    function readSettingsFromFile($fila_path) {
+    function readSettingsFromFile($file_path) {
         $settings = [];
 
         // Check if the file exists
-        if (file_exists($fila_path)) {
+        if (file_exists($file_path)) {
             // Read the file contents
-            $file_contents = file_get_contents($fila_path);
+            $file_contents = file_get_contents($file_path);
 
             // Parse the contents into an associative array (assuming JSON format)
             $settings = json_decode($file_contents, true);

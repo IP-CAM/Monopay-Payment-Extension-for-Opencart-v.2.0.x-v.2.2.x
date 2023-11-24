@@ -1,7 +1,6 @@
 <?php
 
-class ModelPaymentMono extends Model
-{
+class ModelPaymentMono extends Model {
     public function install() {
         mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
@@ -62,8 +61,31 @@ class ModelPaymentMono extends Model
         // 		PRIMARY KEY (Id)
         // 	) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
         // ");
+
+
         $this->load->model('extension/event');
-        $this->model_extension_event->addEvent('payment_mono', 'admin/view/sale/order_info/before', 'payment/mono/order_info');
+
+        $event_code = 'payment_mono';
+        $trigger = 'admin/view/sale/order_info/before';
+        $action = 'payment/mono/order_info';
+
+        $total_mono_events = 0;
+        if (method_exists($this->model_extension_event, 'getEvents')) {
+            $events = $this->model_extension_event->getEvents();
+            foreach ($events as $event) {
+                if ($event['trigger'] === $trigger && $event['action'] === $action) {
+                    $total_mono_events += 1;
+                }
+            }
+        } else {
+            $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "event WHERE `code` = '" . $this->db->escape($event_code) . "' AND `trigger` = '" . $this->db->escape($trigger) . "' AND `action` = '" . $this->db->escape($action) . "'");
+            $total_mono_events = $query->num_rows;
+        }
+
+//        removing old events because we do not need them in opencart v2
+        if ($total_mono_events > 1) {
+            $this->model_extension_event->deleteEvent('payment_mono');
+        }
     }
 
     public function uninstall() {
@@ -97,7 +119,7 @@ class ModelPaymentMono extends Model
     public function DeleteLogs() {
         $sql = "DELETE
                 FROM `" . DB_PREFIX . "monopay_logs`
-                WHERE timestamp < DATE_SUB(NOW(), INTERVAL 5 DAY);";
+                WHERE timestamp < DATE_SUB(NOW(), INTERVAL 2 DAY);";
 
         $this->db->query($sql);
     }
@@ -140,7 +162,6 @@ class ModelPaymentMono extends Model
             return null;
         }
     }
-
 
     public function UpdateSettingsCurrencyValue($currency_code, $currency_value) {
         $sql = "UPDATE `" . DB_PREFIX . "currency` SET value = '" . $this->db->escape($currency_value) . "' WHERE code = '" . $this->db->escape($currency_code) . "'";
