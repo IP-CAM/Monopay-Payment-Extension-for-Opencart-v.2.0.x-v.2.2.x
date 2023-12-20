@@ -3,7 +3,8 @@
 $model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_2.2.0';
+const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.0';
+const VALID_STATUSES = ["created", "processing", "hold", "success", "failure", "reversed", "expired"];
 
 function handleException($e, $m = null, $is_init = false) {
     global $model, $log;
@@ -163,7 +164,6 @@ class ControllerPaymentMono extends Controller {
             $data['error_' . $error_message_value] = (isset($this->error[$error_message_value])) ? $this->error[$error_message_value] : "";
 
         $data['action'] = $this->url->link('payment/mono', 'token=' . $this->session->data['token'], true);
-        $data['cancel'] = $this->url->link('extension/payment', 'token=' . $this->session->data['token'], true);
 
         $data['order_statuses'] = $this->model_localisation_order_status->getOrderStatuses();
         $data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
@@ -191,6 +191,25 @@ class ControllerPaymentMono extends Controller {
         $data['header'] = $this->load->controller('common/header');
         $data['column_left'] = $this->load->controller('common/column_left');
         $data['footer'] = $this->load->controller('common/footer');
+        $data['token'] = $this->session->data['token'];
+        $data['statuses'] = VALID_STATUSES;
+        $data['refresh_invoices_url'] = HTTP_CATALOG . 'index.php?route=payment/mono/refresh_invoices';
+        $data['login_url'] = HTTP_CATALOG . 'index.php?route=api/login';
+
+        $data['settings_text'] = $this->language->get('settings_text');
+        $data['invoices_text'] = $this->language->get('invoices_text');
+        $data['refresh_invoices_btn_text'] = $this->language->get('refresh_invoices_btn_text');
+        $data['all_statuses_text'] = $this->language->get('all_statuses_text');
+        $data['status_text'] = $this->language->get('status_text');
+        $data['created_text'] = $this->language->get('created_text');
+
+        // API login
+        $this->load->model('user/api');
+
+        $api_info = $this->model_user_api->getApi($this->config->get('config_api_id'));
+        if ($api_info) {
+            $data['key'] = $api_info['key'];
+        }
 
         if (VERSION < '2.2.0.0') {
             $this->response->setOutput($this->load->view('payment/mono.tpl', $data));
@@ -198,6 +217,10 @@ class ControllerPaymentMono extends Controller {
             $this->response->setOutput($this->load->view('payment/mono', $data));
         }
 
+    }
+
+    private function get_invoices($status) {
+        return $this->model_payment_mono->GetInvoices($status);
     }
 
     private function validate() {
@@ -331,7 +354,6 @@ class ControllerPaymentMono extends Controller {
         }
     }
 
-
     public function cancel($somedata) {
         $invoice_id = $this->request->post['invoice_id'];
         $data = [
@@ -425,6 +447,26 @@ class ControllerPaymentMono extends Controller {
             $this->model_payment_mono->InvoiceFinalizeHold($invoice_id);
         }
         return $this->response->setOutput($response);
+    }
+
+    public function invoices() {
+        $this->response->addHeader('Content-Type: application/json');
+
+        $this->load->model('payment/mono');
+        $this->load->model('sale/order');
+
+        $status = $this->request->get['status'] ?? "";
+        if ($status && !in_array($status, VALID_STATUSES)) {
+            http_response_code(400);
+            return $this->response->setOutput(json_encode([
+                'err' => "invalid 'status'",
+            ]));
+        }
+
+        $invoices = $this->get_invoices($status);
+        return $this->response->setOutput(json_encode([
+            'invoices' => $invoices,
+        ]));
     }
 
     public function getStatus($invoice_id) {
