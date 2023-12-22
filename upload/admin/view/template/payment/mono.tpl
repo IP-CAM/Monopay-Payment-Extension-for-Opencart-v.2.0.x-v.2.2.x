@@ -1,113 +1,3 @@
-<style>
-    #content input[type="text"] {
-        padding-left: 19px;
-        height: 57px !important;
-        margin-bottom: 3% !important;
-    }
-
-    .mono-save-btn {
-        width: 100%;
-        background-color: #EA5357;
-        color: white;
-        font-weight: 600;
-        padding: 14px 16px;
-        grid-auto-flow: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        font-style: normal;
-        font-size: 16px;
-        line-height: 24px;
-        border: 1px solid transparent;
-        border-radius: 16px;
-        cursor: pointer;
-    }
-
-    .mono-select {
-        outline: none;
-        width: 100%;
-        font-size: 16px;
-        padding: 0 30px 0 15px;
-        margin-bottom: 3% !important;
-        border-radius: 0;
-        font-weight: 600;
-        height: 57px !important;
-        border: 1px solid #e1e1e1;
-    }
-
-    .mono-select:focus-visible, .mono-select:hover, .mono-select:active, .mono-select:focus {
-        border: 1px solid #e1e1e1;
-    }
-
-    .mono-tab {
-        background-color: #fff;
-        padding-left: 0;
-    }
-
-    /* Style the buttons inside the tab */
-    .mono-tab button {
-        background-color: inherit;
-        border: none;
-        outline: none;
-        cursor: pointer;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
-    }
-
-    /* Change background color of buttons on hover */
-    .mono-tab button:hover {
-        background-color: #ddd;
-    }
-
-    .mono-tab button.active {
-        background-color: #f4f4f4;
-        border-bottom: 2px solid #1e91cf;
-    }
-
-    .mono-tabcontent {
-        display: none;
-        padding: 6px 12px;
-        border-top: none;
-    }
-
-    .mono-tabcontent.active {
-        display: block;
-    }
-
-    /* loader stuff */
-    #mono-loader {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        background-color: rgba(255, 255, 255, 0.8);
-        z-index: 1000;
-    }
-
-    .mono-loader-circle {
-        border: 5px solid #f3f3f3;
-        border-top: 5px solid #3498db;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        animation: spin 2s linear infinite;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
-    }
-
-</style>
 <?php echo $header; ?><?php echo $column_left; ?>
 
 <div id="content" style="background-color:#f4f4f3 !important;">
@@ -293,7 +183,7 @@
         <!-- Status Filter Dropdown -->
         <div>
             <select id="statusFilter" class="mono-select" onchange="filterPayments()">
-                <option class="mono-option" alue=""><?php echo $all_statuses_text; ?></option>
+                <option class="mono-option" value=""><?php echo $all_statuses_text; ?></option>
                 <?php foreach ($statuses as $status => $status_desc) : ?>
                 <option class="mono-option" value="<?php echo $status; ?>">
                     <?php echo $status; ?> — <?php echo $status_desc; ?>
@@ -482,5 +372,116 @@
 
 
 </script>
+
+<style>
+    #content input[type="text"] {
+        padding-left: 19px;
+        height: 57px !important;
+        margin-bottom: 3% !important;
+    }
+
+    .mono-save-btn {
+        width: 100%;
+        background-color: #EA5357;
+        color: white;
+        font-weight: 600;
+        padding: 14px 16px;
+        grid-auto-flow: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-style: normal;
+        font-size: 16px;
+        line-height: 24px;
+        border: 1px solid transparent;
+        border-radius: 16px;
+        cursor: pointer;
+    }
+
+    .mono-select {
+        outline: none;
+        width: 100%;
+        font-size: 16px;
+        padding: 0 30px 0 15px;
+        margin-bottom: 3% !important;
+        border-radius: 0;
+        font-weight: 600;
+        height: 57px !important;
+        border: 1px solid #e1e1e1;
+    }
+
+    .mono-select:focus-visible, .mono-select:hover, .mono-select:active, .mono-select:focus {
+        border: 1px solid #e1e1e1;
+    }
+
+    .mono-tab {
+        background-color: #fff;
+        padding-left: 0;
+    }
+
+    /* Style the buttons inside the tab */
+    .mono-tab button {
+        background-color: inherit;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+    }
+
+    /* Change background color of buttons on hover */
+    .mono-tab button:hover {
+        background-color: #ddd;
+    }
+
+    .mono-tab button.active {
+        background-color: #f4f4f4;
+        border-bottom: 2px solid #1e91cf;
+    }
+
+    .mono-tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border-top: none;
+    }
+
+    .mono-tabcontent.active {
+        display: block;
+    }
+
+    /* loader stuff */
+    #mono-loader {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        z-index: 1000;
+    }
+
+    .mono-loader-circle {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+</style>
 
 <?php echo $footer; ?>

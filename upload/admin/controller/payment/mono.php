@@ -3,7 +3,7 @@
 $model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.0';
+const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.1';
 const VALID_STATUSES = [
     "created" => "ще не сплачено",
     "processing" => "в процесі обробки",

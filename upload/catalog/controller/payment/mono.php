@@ -4,7 +4,7 @@
 $client_model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.0';
+const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.1';
 
 function clientHandleException($e, $m = null, $isInit = false) {
     global $client_model, $log;
