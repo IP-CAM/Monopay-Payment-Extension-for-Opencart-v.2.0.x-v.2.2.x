@@ -1,16 +1,11 @@
 <style>
-    .mono-text {
-        margin-bottom: 3%;
-        margin-left: 19px;
-    }
-
     #content input[type="text"] {
         padding-left: 19px;
         height: 57px !important;
         margin-bottom: 3% !important;
     }
 
-    .save-btn {
+    .mono-save-btn {
         width: 100%;
         background-color: #EA5357;
         color: white;
@@ -44,66 +39,59 @@
         border: 1px solid #e1e1e1;
     }
 
-    option.selected {
-        background-color: #000000 !important;
-    }
-
-    .tab {
+    .mono-tab {
         background-color: #fff;
         padding-left: 0;
     }
 
     /* Style the buttons inside the tab */
-    .tab button {
+    .mono-tab button {
         background-color: inherit;
         border: none;
         outline: none;
         cursor: pointer;
-        padding: 10px 20px; /* Adjust padding for tab buttons */
-        transition: 0.3s;
-        font-size: 16px; /* Adjust font size as needed */
-        border-radius: 4px; /* Optional: if you want rounded corners */
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
     }
 
     /* Change background color of buttons on hover */
-    .tab button:hover {
+    .mono-tab button:hover {
         background-color: #ddd;
     }
 
-    /* Create an active/current tablink class */
-    .tab button.active {
-        background-color: #f4f4f4; /* Slightly different background for the active tab */
-        border-bottom: 2px solid #1e91cf; /* Highlight the active tab with a bottom border */
+    .mono-tab button.active {
+        background-color: #f4f4f4;
+        border-bottom: 2px solid #1e91cf;
     }
 
-    /* Style the tab content */
-    .tabcontent {
+    .mono-tabcontent {
         display: none;
         padding: 6px 12px;
         border-top: none;
     }
 
-    /* Modify the active tab content */
-    .tabcontent.active {
+    .mono-tabcontent.active {
         display: block;
     }
 
-    #loader {
+    /* loader stuff */
+    #mono-loader {
         display: flex;
         justify-content: center;
         align-items: center;
-        position: fixed; /* Or absolute, depending on your needs */
+        position: fixed;
         width: 100%;
         height: 100%;
         top: 0;
         left: 0;
-        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
-        z-index: 1000; /* Ensure it's above other content */
+        background-color: rgba(255, 255, 255, 0.8);
+        z-index: 1000;
     }
 
-    .loader-circle {
-        border: 5px solid #f3f3f3; /* Light grey border for the loader */
-        border-top: 5px solid #3498db; /* Blue color */
+    .mono-loader-circle {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #3498db;
         border-radius: 50%;
         width: 50px;
         height: 50px;
@@ -124,13 +112,13 @@
 
 <div id="content" style="background-color:#f4f4f3 !important;">
     <!-- Tab links -->
-    <div class="tab">
-        <button class="tablinks" id="settings-btn" onclick="openTab('settings')"><?php echo $settings_text ;?></button>
-        <button class="tablinks" id="invoices-btn" onclick="openTab('invoices')"><?php echo $invoices_text ;?></button>
+    <div class="mono-tab">
+        <button class="mono-tablinks" id="mono-settings-btn" onclick="openTab('mono-settings')"><?php echo $settings_text ;?></button>
+        <button class="mono-tablinks" id="mono-invoices-btn" onclick="openTab('mono-invoices')"><?php echo $invoices_text ;?></button>
     </div>
 
     <!-- Tab content -->
-    <div id="settings" class="tabcontent">
+    <div id="mono-settings" class="mono-tabcontent">
         <div class="row">
             <div class="col-xs-12"
                  style="padding: 50px; background-color:white; border: 1px solid #ccc; border-radius:24px;">
@@ -169,7 +157,7 @@
                             <?php if ($error_merchant) { ?>
                             <span class="error"><?php echo $error_merchant ;?></span>
                             <?php } ?>
-                            <p class="mono-text"><?php echo $mono_text ;?> <a href="https://web.monobank.ua/"
+                            <p class="mono-text" style="margin-bottom: 3%;margin-left: 19px;"><?php echo $mono_text ;?> <a href="https://web.monobank.ua/"
                                                                               style="color:#EA5357;" target="_blank">web.monobank.ua</a>
                             </p>
                         </div>
@@ -285,7 +273,7 @@
                     <div class="row">
                         <div class="col-xs-10">
                             <button type="submit" form="form" data-toggle="tooltip"
-                                    class="save-btn"><?php echo $save_btn ;?></button>
+                                    class="mono-save-btn"><?php echo $save_btn ;?></button>
                         </div>
                         <div class="col-xs-2">
                             <img src="view/image/payment/cat.png" alt="Monobank"
@@ -297,18 +285,18 @@
         </div>
     </div>
 
-    <div id="invoices" class="tabcontent">
-        <div id="loader" style="display:none;">
-            <div class="loader-circle"></div>
+    <div id="mono-invoices" class="mono-tabcontent">
+        <div id="mono-loader" style="display:none;">
+            <div class="mono-loader-circle"></div>
         </div>
 
         <!-- Status Filter Dropdown -->
         <div>
             <select id="statusFilter" class="mono-select" onchange="filterPayments()">
-                <option value=""><?php echo $all_statuses_text; ?></option>
-                <?php foreach ($statuses as $status) : ?>
-                <option value="<?php echo $status; ?>">
-                    <?php echo $status; ?>
+                <option class="mono-option" alue=""><?php echo $all_statuses_text; ?></option>
+                <?php foreach ($statuses as $status => $status_desc) : ?>
+                <option class="mono-option" value="<?php echo $status; ?>">
+                    <?php echo $status; ?> — <?php echo $status_desc; ?>
                 </option>
                 <?php endforeach; ?>
             </select>
@@ -325,24 +313,53 @@
 
 <script>
     var invoicesLoaded = false;
+    var token = '';
+
+    // Login to the API
+    $.ajax({
+        url: '<?php echo $login_url; ?>',
+        type: 'post',
+        dataType: 'json',
+        data: 'key=<?php echo $key; ?>',
+        crossDomain: true,
+        success: function (json) {
+            $('.alert').remove();
+
+            if (json['error']) {
+                if (json['error']['key']) {
+                    $('#content > .container-fluid').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + json['error']['key'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+                }
+
+                if (json['error']['ip']) {
+                    $('#content > .container-fluid').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + json['error']['ip'] + ' <button type="button" id="button-ip-add" data-loading-text="Loading..." class="btn btn-danger btn-xs pull-right"><i class="fa fa-plus"></i> Add IP</button></div>');
+                }
+            }
+
+            if (json['token']) {
+                token = json['token'];
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
 
     function openTab(tabName) {
         var i, tabcontent, tablinks;
-        tabcontent = document.getElementsByClassName("tabcontent");
+        tabcontent = document.getElementsByClassName("mono-tabcontent");
         for (i = 0; i < tabcontent.length; i++) {
             tabcontent[i].style.display = "none";
             tabcontent[i].classList.remove("active");
         }
-        tablinks = document.getElementsByClassName("tablinks");
+        tablinks = document.getElementsByClassName("mono-tablinks");
         for (i = 0; i < tablinks.length; i++) {
             tablinks[i].classList.remove("active");
-            // tablinks[i].className = tablinks[i].className.replace(" active", "");
         }
         document.getElementById(tabName).style.display = "block";
         document.getElementById(tabName).classList.add("active");
         document.getElementById(tabName + "-btn").classList.add("active");
 
-        if (tabName === 'invoices' && !invoicesLoaded) {
+        if (tabName === 'mono-invoices' && !invoicesLoaded) {
             loadPayments('index.php?route=payment/mono/invoices&token=<?php echo $token; ?>');
         }
     }
@@ -376,7 +393,6 @@
     }
 
     function loadPayments(url) {
-        // Start building the HTML for the table
         var tableHTML = '<a class="btn btn-primary" onclick="refreshInvoices();"><?php echo $refresh_invoices_btn_text; ?></a><table class="table"><thead><tr>' +
             '<th><input type="checkbox" id="select_all_invoices" onclick="selectAllInvoices(this)"/></th>' +
             '<th>Order id</th>' +
@@ -397,9 +413,7 @@
             },
             success: function (response) {
                 if (!response.hasOwnProperty('invoices') || response.invoices === null || response.invoices.length == 0) {
-                    // Close the table HTML tags
                     tableHTML += '</tbody></table>';
-                    // Insert the table HTML into the invoices-container div
                     document.getElementById('invoices_table').innerHTML = tableHTML;
                     return;
                 }
@@ -413,7 +427,7 @@
                     tableHTML += '<tr>' +
                         '<td><input type="checkbox" name="selected_invoices[]" value="' + invoice.invoice_id + '" /></td>' +
                         '<td><a href="' + orderUrl + '">' + invoice.order_id + '</a></td>' +
-                        '<td><a href="' + invoiceUrl + '">' + invoice.invoice_id + '</a> <i class="fa fa-copy" onclick="copyToClipboard(\'' + invoice.invoice_id + '\')"></i></td>' +
+                        '<td><i class="fa fa-copy" onclick="copyToClipboard(\'' + invoice.invoice_id + '\')"></i> <a href="' + invoiceUrl + '">' + invoice.invoice_id + '</a></td>' +
                         '<td>' + invoice.status + '</td>' +
                         '<td>' + invoice.created + '</td>' +
                         '</tr>';
@@ -422,44 +436,11 @@
                 // Update the flag so the data isn't reloaded on subsequent tab switches
                 invoicesLoaded = true;
 
-                // Close the table HTML tags
                 tableHTML += '</tbody></table>';
-                // Insert the table HTML into the invoices-container div
                 document.getElementById('invoices_table').innerHTML = tableHTML;
             },
         })
     }
-
-    var token = '';
-
-    // Login to the API
-    $.ajax({
-        url: '<?php echo $login_url; ?>',
-        type: 'post',
-        dataType: 'json',
-        data: 'key=<?php echo $key; ?>',
-        crossDomain: true,
-        success: function (json) {
-            $('.alert').remove();
-
-            if (json['error']) {
-                if (json['error']['key']) {
-                    $('#content > .container-fluid').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + json['error']['key'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
-                }
-
-                if (json['error']['ip']) {
-                    $('#content > .container-fluid').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> ' + json['error']['ip'] + ' <button type="button" id="button-ip-add" data-loading-text="Loading..." class="btn btn-danger btn-xs pull-right"><i class="fa fa-plus"></i> Add IP</button></div>');
-                }
-            }
-
-            if (json['token']) {
-                token = json['token'];
-            }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
-        }
-    });
 
     function refreshInvoices() {
         var selectedInvoices = getSelectedInvoices();
@@ -468,7 +449,7 @@
         }
 
         // Show loader
-        document.getElementById('loader').style.display = 'block';
+        document.getElementById('mono-loader').style.display = 'block';
 
         jQuery.ajax({
             url: '<?php echo $refresh_invoices_url; ?>&token=' + token,
@@ -479,22 +460,21 @@
                 "Content-Type": "application/json; charset=utf-8"
             },
             success: function (response) {
-                // Hide loader
-                document.getElementById('loader').style.display = 'none';
+                document.getElementById('mono-loader').style.display = 'none';
 
-                // Refresh the payments list
                 filterPayments();
             },
             error: function () {
                 // Hide loader in case of error
-                document.getElementById('loader').style.display = 'none';
+                document.getElementById('mono-loader').style.display = 'none';
             }
         });
     }
 
     document.addEventListener('DOMContentLoaded', (event) => {
-        openTab('settings');
+        openTab('mono-settings');
     });
+
 
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text);

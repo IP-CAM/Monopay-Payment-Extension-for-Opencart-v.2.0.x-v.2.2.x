@@ -4,7 +4,15 @@ $model = null;
 $log = null;
 
 const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.0';
-const VALID_STATUSES = ["created", "processing", "hold", "success", "failure", "reversed", "expired"];
+const VALID_STATUSES = [
+    "created" => "ще не сплачено",
+    "processing" => "в процесі обробки",
+    "hold" => "клієнт оплатив, кошти на утриманні",
+    "success" => "клієнт оплатив або холд фіналізовано",
+    "failure" => "оплата не пройшла",
+    "reversed" => "оплату було частково або повністю повернено",
+    "expired" => "успішних спроб оплати не було і не більше буде"
+];
 
 function handleException($e, $m = null, $is_init = false) {
     global $model, $log;
@@ -456,7 +464,7 @@ class ControllerPaymentMono extends Controller {
         $this->load->model('sale/order');
 
         $status = $this->request->get['status'] ?? "";
-        if ($status && !in_array($status, VALID_STATUSES)) {
+        if ($status && !key_exists($status, VALID_STATUSES)) {
             http_response_code(400);
             return $this->response->setOutput(json_encode([
                 'err' => "invalid 'status'",

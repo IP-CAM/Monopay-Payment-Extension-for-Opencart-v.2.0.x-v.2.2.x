@@ -182,7 +182,7 @@ class ControllerPaymentMono extends Controller {
                     $invoice_db['status'] = $status_response['status'];
                     $invoice_db['payment_amount'] = $status_response['status'] == 'created' ? 0 : $status_response['amount'];
                     $invoice_db['failure_reason'] = (key_exists('failureReason', $status_response)) ? $status_response['failureReason'] : null;
-                    $invoice_db['payment_amount_refunded'] = ($invoice_db['payment_type'] == 'debit') ? $status_response['amount'] - $final_amount : $invoice_db['payment_amount_refunded'] + $invoice_db['payment_amount_final'] - $status_response['finalAmount'];
+                    $invoice_db['payment_amount_refunded'] = ($invoice_db['payment_type'] == 'debit') ? $status_response['amount'] - $final_amount : $invoice_db['payment_amount_refunded'] + $invoice_db['payment_amount_final'] - $final_amount;
                     $invoice_db['payment_amount_final'] = $final_amount;
                     $this->model_payment_mono->InvoiceUpdateStatus($invoice_db['invoice_id'], $invoice_db['status'],
                         $invoice_db['payment_amount_final'], $invoice_db['payment_amount'], $invoice_db['payment_amount_refunded'],
@@ -371,10 +371,8 @@ class ControllerPaymentMono extends Controller {
 
             $invoice_status = $this->getStatus($mono_order['InvoiceId']);
             $payment_type = ($mono_order['is_hold'] == 'hold') ? 'hold' : 'debit';
-            $amount_refunded = $invoice_status['amount'] - $invoice_status['finalAmount'];
+            $amount_refunded = $invoice_status['amount'] - $final_amount;
 
-            $failure_reason = (key_exists('failureReason', $status_response)) ? $status_response['failureReason'] : '';
-            $final_amount = (key_exists('finalAmount', $status_response)) ? $status_response['finalAmount'] : 0;
             $invoice_db = [
                 'invoice_id' => $mono_order['InvoiceId'],
                 'order_id' => $order_id,
