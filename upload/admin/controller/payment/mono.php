@@ -3,7 +3,7 @@
 $model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.1';
+const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.2';
 const VALID_STATUSES = [
     "created" => "ще не сплачено",
     "processing" => "в процесі обробки",
@@ -228,7 +228,15 @@ class ControllerPaymentMono extends Controller {
     }
 
     private function get_invoices($status) {
-        return $this->model_payment_mono->GetInvoices($status);
+        $invoices = $this->model_extension_payment_mono->GetInvoices($status);
+        $kyiv_or_kiev = in_array('Europe/Kyiv', DateTimeZone::listIdentifiers()) ? 'Europe/Kyiv' : 'Europe/Kiev';
+        foreach ($invoices as $i=>$invoice) {
+            $date = new DateTime($invoice['created'], new DateTimeZone('UTC'));
+//          yes, Kyiv not Kiev
+            $date->setTimezone(new DateTimeZone($kyiv_or_kiev));
+            $invoices[$i]['created'] = $date->format('Y-m-d H:i:s');
+        }
+        return $invoices;
     }
 
     private function validate() {
