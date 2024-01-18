@@ -4,7 +4,7 @@
 $client_model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.2';
+const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.3';
 
 function clientHandleException($e, $m = null, $isInit = false) {
     global $client_model, $log;
@@ -144,8 +144,17 @@ class ControllerPaymentMono extends Controller {
     public function response() {
         $this->language->load('payment/mono');
 
+        if (!key_exists('order_id', $this->session->data)) {
+            return;
+        }
         $order_id = $this->session->data['order_id'];
+        if (!$order_id) {
+            return;
+        }
         $order_info = $this->model_checkout_order->getOrder($order_id);
+        if (!$order_info) {
+            return;
+        }
 
         switch ($order_info['order_status_id']) {
             case $this->config->get('mono_order_hold_status_id'):
@@ -739,7 +748,10 @@ class ControllerPaymentMono extends Controller {
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
 
-        $invoices = $data['invoices'] ?? [];
+        $invoices = [];
+        if (isset($data['invoices'])) {
+            $invoices = $data['invoices'];
+        }
 
         foreach ($invoices as $invoice_id) {
             $this->refresh_invoice($invoice_id);
