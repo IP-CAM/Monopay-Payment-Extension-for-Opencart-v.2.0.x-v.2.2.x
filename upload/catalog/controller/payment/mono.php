@@ -4,7 +4,7 @@
 $client_model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_2.3.3';
+const MONOBANK_PAYMENT_VERSION = 'Polia_3.0.0';
 
 function clientHandleException($e, $m = null, $isInit = false) {
     global $client_model, $log;
@@ -120,7 +120,7 @@ class ControllerPaymentMono extends Controller {
                             if (VERSION < '2.2.0.0') {
                                 return $this->response->setOutput($this->load->view('default/template/payment/mono.tpl', $data));
                             } else {
-                                return $this->response->setOutput($this->load->view('default/template/payment/mono', $data));
+                                return $this->response->setOutput($this->load->view('payment/mono', $data));
                             }
                         }
                     }
@@ -137,7 +137,7 @@ class ControllerPaymentMono extends Controller {
         if (VERSION < '2.2.0.0') {
             return $this->load->view('default/template/payment/mono.tpl', $data);
         } else {
-            return $this->load->view('default/template/payment/mono', $data);
+            return $this->load->view('payment/mono', $data);
         }
     }
 
@@ -211,7 +211,7 @@ class ControllerPaymentMono extends Controller {
                         break;
                     case 'expired':
                         $invoice_db['failure_reason'] = $this->language->get('text_status_expired');
-        //               no break here, making it go to failure
+                    //               no break here, making it go to failure
                     case 'failure':
                         $this->model_checkout_order->addOrderHistory($order_id, $this->config->get('mono_order_cancelled_status_id'), sprintf($this->language->get('text_status_cancelled'), $invoice_db['failure_reason']), true);
                         $this->response->redirect($this->url->link('checkout/failure', '', true));
@@ -329,7 +329,7 @@ class ControllerPaymentMono extends Controller {
 
         $request_bytes = file_get_contents("php://input");
 
-        if (!$this->verifyMonopaySignature($x_sign, $request_bytes)) {
+        if (!$this->verifySignature($x_sign, $request_bytes)) {
             $this->response->setOutput(json_encode([
                 'info' => 'invalid X-Sign',
             ]));
@@ -490,7 +490,7 @@ class ControllerPaymentMono extends Controller {
         }
         $request_path = $_SERVER['REQUEST_URI'];
 
-        if (!$this->verifyMonopaySignature($x_sign, $x_time . $request_path)) {
+        if (!$this->verifySignature($x_sign, $x_time . $request_path)) {
             http_response_code(400);
             $this->response->setOutput(json_encode([
                 'err' => 'invalid "X-Sign"',
@@ -526,6 +526,11 @@ class ControllerPaymentMono extends Controller {
         $total = (int)($order_info['total'] * 100 + 0.5);
         $basket_order = $this->getEncodedProducts($order_info['order_id'], $total);
 
+        $customer_emails = [];
+        if (key_exists('email', $order_info) && $order_info['email']) {
+            $customer_emails = [$order_info['email']];
+        }
+
         $curl = curl_init();
         curl_setopt_array($curl, [
             CURLOPT_URL => 'https://api.monobank.ua/api/merchant/invoice/create',
@@ -543,6 +548,7 @@ class ControllerPaymentMono extends Controller {
                     'reference' => (string)$order_info['order_id'],
                     'destination' => $destination,
                     'basketOrder' => $basket_order,
+                    'customerEmails' => $customer_emails,
                 ],
                 'redirectUrl' => (string)$this->url->link('payment/mono/response', '', true),
                 'paymentType' => $payment_type,
@@ -572,7 +578,7 @@ class ControllerPaymentMono extends Controller {
         return json_decode($response, true);
     }
 
-    function verifyMonopaySignature($x_sign, $request_bytes) {
+    function verifySignature($x_sign, $request_bytes) {
         $signature = base64_decode($x_sign);
         $pubkey = $this->getPubKey();
         $public_key = openssl_get_publickey(base64_decode($pubkey));
@@ -690,7 +696,7 @@ class ControllerPaymentMono extends Controller {
         $basket = [];
         foreach ($order_products as $order_product) {
             $sum = (int)($order_product['price'] * 100 + 0.5);
-            $qty = (int)$order_product['quantity'];
+            $qty = (float)$order_product['quantity'];
             $p = $products_map[$order_product['product_id']];
             $basket[] = [
                 'name' => $order_product['name'],

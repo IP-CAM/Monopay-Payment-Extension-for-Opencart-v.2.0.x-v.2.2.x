@@ -1,7 +1,6 @@
 <?php
 
-class ModelPaymentMono extends Model
-{
+class ModelPaymentMono extends Model {
     private $CURRENCY_CODE = [
         'UAH' => 980,
         'EUR' => 978,
@@ -17,23 +16,23 @@ class ModelPaymentMono extends Model
         }
         $mono_geo_zone = $this->config->get('mono_geo_zone_id');
         if ($mono_geo_zone == '0') {
-            $show_monopay = true;
+            $show_plata = true;
         } else {
             $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "zone_to_geo_zone WHERE geo_zone_id = '" . (int)$mono_geo_zone . "' AND country_id = '" . (int)$address['country_id'] . "' AND (zone_id = '" . (int)$address['zone_id'] . "' OR zone_id = '0')");
             if ($query->num_rows) {
-                $show_monopay = true;
+                $show_plata = true;
             } else {
-                $show_monopay = false;
+                $show_plata = false;
             }
         }
-        if (!$show_monopay) {
+        if (!$show_plata) {
             return [];
         }
 
         return [
             'code' => 'mono',
             'terms' => '',
-            'title' => $this->language->get('text_title') . '<img src="/image/monopay_light_bg.svg"  style="width: 75px;margin-left: 5px;display: inline-block;vertical-align: bottom;" alt="monopay"/>',
+            'title' => $this->language->get('text_title') . '<img src="/image/plata_light_bg.svg"  style="width: 120px;margin-left: 5px;display: inline-block; vertical-align: middle;" alt="plata by mono"/>',
             'sort_order' => $this->config->get('mono_sort_order')
         ];
     }
