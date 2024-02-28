@@ -32,7 +32,7 @@ class ModelPaymentMono extends Model {
         return [
             'code' => 'mono',
             'terms' => '',
-            'title' => $this->language->get('text_title') . '<img src="/image/logo.svg" style="width: 120px;margin-left: 5px;display: inline-block; vertical-align: middle;" alt="plata"/>',
+            'title' => $this->language->get('text_title') . '<img src="/image/logo.svg" style="width:120px;margin-left:5px;" alt="plata"/>',
             'sort_order' => $this->config->get('mono_sort_order')
         ];
     }
