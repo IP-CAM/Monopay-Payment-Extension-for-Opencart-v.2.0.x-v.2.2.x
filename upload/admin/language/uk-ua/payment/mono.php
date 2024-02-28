@@ -3,7 +3,7 @@
 $_['heading_title'] = 'plata by mono';
 
 // Text
-$_['text_mono'] = '<a onclick="window.open(\'https://www.monobank.ua/e-comm\');"><img src="view/image/payment/logo.svg" alt="plata" title="plata" width="100px"/></a>';
+$_['text_mono'] = '<a onclick="window.open(\'https://www.monobank.ua/e-comm\');"><img src="view/image/payment/plata.svg" alt="plata" title="plata" width="100px"/></a>';
 $_['text_success'] = 'Налаштування модуля оновлено :)';
 $_['text_pay'] = 'Monobank';
 $_['mono_text'] = 'Дізнатися свій X-Token ви можете за посиланням:';
