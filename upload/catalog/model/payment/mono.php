@@ -59,7 +59,7 @@ class ModelPaymentMono extends Model {
         return $q->num_rows ? $q->row : false;
     }
 
-    public function getProducts(array $product_ids) {
+    public function getProducts($product_ids) {
         $q = $this->db->query("SELECT * FROM `" . DB_PREFIX . "product` WHERE product_id IN (" . implode(",", $product_ids) . ")");
 
         return $q->num_rows ? $q->rows : [];

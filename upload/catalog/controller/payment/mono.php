@@ -4,7 +4,7 @@
 $client_model = null;
 $log = null;
 
-const MONOBANK_PAYMENT_VERSION = 'Polia_3.0.0';
+const MONOBANK_PAYMENT_VERSION = 'Polia_3.0.1';
 
 function clientHandleException($e, $m = null, $isInit = false) {
     global $client_model, $log;
@@ -82,7 +82,7 @@ class ControllerPaymentMono extends Controller {
 
         try {
             throw new Exception("init");
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             clientHandleException($e, $this->model_payment_mono, true);
         }
     }
@@ -94,7 +94,7 @@ class ControllerPaymentMono extends Controller {
         $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
 
         try {
-            if (!isset($this->CURRENCY_CODE[strtoupper($order_info['currency_code'])])) {
+            if (!array_key_exists(strtoupper($order_info['currency_code']), $this->CURRENCY_CODE)) {
                 return;
             }
 
@@ -114,7 +114,7 @@ class ControllerPaymentMono extends Controller {
                     if ($rate_buy == 0) {
                         try {
                             throw new ErrorException(sprintf('Rate for currency %s not found!', $default_ccy));
-                        } catch (Exception $e) {
+                        } catch (\Exception $e) {
                             $data['error_message'] = $this->language->get('text_general_error');
                             clientHandleException($e, $this->model_payment_mono);
                             if (VERSION < '2.2.0.0') {
@@ -129,7 +129,7 @@ class ControllerPaymentMono extends Controller {
             }
 
             $data['checkout_url'] = $this->getCheckoutUrl($order_info, $default_ccy);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $data['error_message'] = $this->language->get('text_general_error');
             clientHandleException($e, $this->model_payment_mono);
         }
@@ -629,14 +629,14 @@ class ControllerPaymentMono extends Controller {
     function insertInvoiceFromOldTable($order_info) {
         try {
             $mono_order = $this->model_payment_mono->getOrder($order_info['order_id']);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             clientHandleException($e);
             return null;
         }
         if (!$mono_order) {
             try {
                 throw new ErrorException(sprintf("invoice not found for order_id: %s", $order_info['order_id']));
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 clientHandleException($e);
             }
             return null;
@@ -692,19 +692,38 @@ class ControllerPaymentMono extends Controller {
             $products_map[$product['product_id']] = $product;
         }
 
+        $fiscalization_code_field = $this->config->get($this->prefix . 'mono_fiscalization_code_field');
+        if (empty($fiscalization_code_field)) {
+            $fiscalization_code_field = 'sku';
+        }
         $total_from_basket = 0;
         $basket = [];
         foreach ($order_products as $order_product) {
             $sum = (int)($order_product['price'] * 100 + 0.5);
             $qty = (float)$order_product['quantity'];
             $p = $products_map[$order_product['product_id']];
-            $basket[] = [
-                'name' => $order_product['name'],
-                'sum' => $sum,
-                'qty' => $qty,
-                'code' => $p['sku'],
-                'icon' => HTTPS_SERVER . "/image/" . $p['image'],
-            ];
+            $qty_rest = $qty;
+
+//            splitting multiple qty items so that discount coupons will be correctly applied to prices
+            while ($qty_rest >= 1) {
+                $basket[] = [
+                    'name' => $order_product['name'],
+                    'sum' => $sum,
+                    'qty' => 1,
+                    'code' => $p[$fiscalization_code_field],
+                    'icon' => HTTPS_SERVER . "/image/" . $p['image'],
+                ];
+                $qty_rest -= 1;
+            }
+            if (!$this->floats_equal($qty_rest, 0)) {
+                $basket[] = [
+                    'name' => $order_product['name'],
+                    'sum' => $sum,
+                    'qty' => $qty_rest,
+                    'code' => $p[$fiscalization_code_field],
+                    'icon' => HTTPS_SERVER . "/image/" . $p['image'],
+                ];
+            }
             $total_from_basket += $qty * $sum;
         }
 
@@ -848,6 +867,11 @@ class ControllerPaymentMono extends Controller {
                 break;
             default:
         }
+    }
+
+    private function floats_equal($fist_value, $second_value) {
+        $tolerance = 0.001;
+        return (abs($fist_value) - abs($second_value)) < $tolerance;
     }
 
 }
